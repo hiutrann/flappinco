@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Flyer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 50%, #98D8E8 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
+            border: 3px solid #4682B4;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        
+        #cloud {
+    position: absolute;
+    width: 80px;
+    height: auto;
+    z-index: 10;
+    pointer-events: none;
+}
+
+        
+
+        
+
+        .cloud-eye.left {
+            left: 18px;
+        }
+        
+        .cloud-eye.right {
+            right: 18px;
+        }
+        
+
+        
+        .ufo {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+            border: 3px solid #FF4757;
+            border-radius: 50%;
+            z-index: 5;
+        }
+        
+        .ufo::before {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            background: linear-gradient(135deg, #FFA726, #FFB74D);
+            border: 2px solid #FF8F00;
+            border-radius: 50%;
+            left: 50%;
+            top: -10px;
+            transform: translateX(-50%);
+        }
+        
+        .ufo::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #00E676;
+            border-radius: 50%;
+            left: 50%;
+            top: -5px;
+            transform: translateX(-50%);
+            box-shadow: 0 0 10px #00E676;
+        }
+        
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C3E50;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            z-index: 100;
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 200;
+            display: none;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #2C3E50;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            z-index: 100;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #357ABD, #2E5984);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="cloud">
+            <img id="cloud" src="https://fhevm-explorers.notion.site/image/attachment%3Ab6e9ef17-434d-46af-93ff-6623a7356267%3Acloud__1_.png?table=block&id=1ff14646-5d40-802b-ba48-d6f685a79192&spaceId=2402153e-4f34-4a63-b2c2-c14599ae2bc8&width=1420&userId=&cache=v2" alt="Cloud">
+			
+        </div>
+        <div id="score">Score: 0</div>
+        <div id="instructions">Press SPACEBAR to fly! Avoid the UFOs!</div>
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let cloud = document.getElementById('cloud');
+        let gameContainer = document.getElementById('gameContainer');
+        let scoreElement = document.getElementById('score');
+        let gameOverElement = document.getElementById('gameOver');
+        let finalScoreElement = document.getElementById('finalScore');
+        
+        let cloudY = 300;
+        let cloudVelocity = 0;
+        let gravity = 0.6;
+        let jumpPower = -12;
+        let score = 0;
+        let gameRunning = true;
+        let ufos = [];
+        let ufoSpawnTimer = 0;
+        let ufoSpeed = 3;
+        
+        // Initialize cloud position
+        cloud.style.left = '100px';
+        cloud.style.top = cloudY + 'px';
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Apply gravity to cloud
+            cloudVelocity += gravity;
+            cloudY += cloudVelocity;
+            
+            // Keep cloud in bounds
+            if (cloudY < 0) {
+                cloudY = 0;
+                cloudVelocity = 0;
+            }
+            if (cloudY > 540) {
+                gameOver();
+                return;
+            }
+            
+            // Update cloud position
+            cloud.style.top = cloudY + 'px';
+            
+            // Spawn UFOs
+            ufoSpawnTimer++;
+            let spawnRate = Math.max(60 - Math.floor(score / 10), 30); // Faster spawning as score increases
+            if (ufoSpawnTimer >= spawnRate) {
+                spawnUFO();
+                ufoSpawnTimer = 0;
+            }
+            
+            // Update UFOs
+            for (let i = ufos.length - 1; i >= 0; i--) {
+                let ufo = ufos[i];
+                let ufoX = parseInt(ufo.element.style.left);
+                ufoX -= ufoSpeed + Math.floor(score / 50); // Speed increases with score
+                
+                if (ufoX < -60) {
+                    // Remove UFO that's off screen
+                    ufo.element.remove();
+                    ufos.splice(i, 1);
+                    score += 10;
+                    scoreElement.textContent = 'Score: ' + score;
+                } else {
+                    ufo.element.style.left = ufoX + 'px';
+                    
+                    // Check collision
+                    if (checkCollision(ufo)) {
+                        gameOver();
+                        return;
+                    }
+                }
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function spawnUFO() {
+            let ufo = document.createElement('div');
+            ufo.className = 'ufo';
+            ufo.style.left = '800px';
+            ufo.style.top = Math.random() * 500 + 'px';
+            gameContainer.appendChild(ufo);
+            
+            ufos.push({
+                element: ufo,
+                x: 800,
+                y: parseInt(ufo.style.top)
+            });
+        }
+        
+        function checkCollision(ufo) {
+            let cloudRect = {
+                x: 100,
+                y: cloudY,
+                width: 80,
+                height: 60
+            };
+            
+            let ufoRect = {
+                x: parseInt(ufo.element.style.left),
+                y: parseInt(ufo.element.style.top),
+                width: 60,
+                height: 40
+            };
+            
+            return (cloudRect.x < ufoRect.x + ufoRect.width &&
+                    cloudRect.x + cloudRect.width > ufoRect.x &&
+                    cloudRect.y < ufoRect.y + ufoRect.height &&
+                    cloudRect.y + cloudRect.height > ufoRect.y);
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            finalScoreElement.textContent = score;
+            gameOverElement.style.display = 'block';
+        }
+        
+        function restartGame() {
+            // Reset game state
+            gameRunning = true;
+            cloudY = 300;
+            cloudVelocity = 0;
+            score = 0;
+            ufoSpawnTimer = 0;
+            
+            // Clear UFOs
+            ufos.forEach(ufo => ufo.element.remove());
+            ufos = [];
+            
+            // Reset UI
+            scoreElement.textContent = 'Score: 0';
+            gameOverElement.style.display = 'none';
+            cloud.style.top = cloudY + 'px';
+            
+            // Start game loop
+            gameLoop();
+        }
+        
+        // Controls
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && gameRunning) {
+                event.preventDefault();
+                cloudVelocity = jumpPower;
+            }
+        });
+        
+        // Start the game
+        gameLoop();
+    </script>
+</body>
+</html>
