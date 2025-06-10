@@ -48,43 +48,6 @@
             right: 18px;
         }
         
-
-        
-        .ufo {
-            position: absolute;
-            width: 60px;
-            height: 40px;
-            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
-            border: 3px solid #FF4757;
-            border-radius: 50%;
-            z-index: 5;
-        }
-        
-        .ufo::before {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 20px;
-            background: linear-gradient(135deg, #FFA726, #FFB74D);
-            border: 2px solid #FF8F00;
-            border-radius: 50%;
-            left: 50%;
-            top: -10px;
-            transform: translateX(-50%);
-        }
-        
-        .ufo::after {
-            content: '';
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #00E676;
-            border-radius: 50%;
-            left: 50%;
-            top: -5px;
-            transform: translateX(-50%);
-            box-shadow: 0 0 10px #00E676;
-        }
         
         #score {
             position: absolute;
@@ -160,6 +123,23 @@
     </div>
 
     <script>
+	const milestoneSounds = [
+    new Audio('https://www.myinstants.com/media/sounds/vine-boom.mp3'),
+    new Audio('https://www.myinstants.com/media/sounds/anime-wow.mp3'),
+    new Audio('https://www.myinstants.com/media/sounds/movie_1_bruh.mp3'),
+    new Audio('https://www.myinstants.com/media/sounds/meow_1.mp3'),
+    new Audio('https://www.myinstants.com/media/sounds/tung-tung-sahur.mp3')
+];
+
+let lastMilestone = 0;
+
+		const ufoImages = [
+    "https://media1.tenor.com/m/eqKa0jPwPDsAAAAC/cat-animation.gif",
+    "https://media.tenor.com/wvsIqmxZ6zkAAAAM/pepe-peepo.gif",
+    "https://media.tenor.com/1Q0-E6lJMl8AAAAm/skibidi.webp",
+    "https://media.tenor.com/OlS-iyGLULUAAAAM/the-cow-after-roblox-verification-be-like.gif"
+];
+
         // Game variables
         let cloud = document.getElementById('cloud');
         let gameContainer = document.getElementById('gameContainer');
@@ -222,6 +202,19 @@
                     ufos.splice(i, 1);
                     score += 10;
                     scoreElement.textContent = 'Score: ' + score;
+					score += 10;
+scoreElement.textContent = 'Score: ' + score;
+
+// Nếu đạt mốc 100 điểm
+if (score >= lastMilestone + 100) {
+    // Phát âm thanh ngẫu nhiên
+    const sound = milestoneSounds[Math.floor(Math.random() * milestoneSounds.length)];
+    sound.play();
+
+    // Cập nhật mốc tiếp theo
+    lastMilestone = score - (score % 100);
+}
+
                 } else {
                     ufo.element.style.left = ufoX + 'px';
                     
@@ -231,24 +224,32 @@
                         return;
                     }
                 }
+				
             }
             
             requestAnimationFrame(gameLoop);
         }
         
         function spawnUFO() {
-            let ufo = document.createElement('div');
-            ufo.className = 'ufo';
-            ufo.style.left = '800px';
-            ufo.style.top = Math.random() * 500 + 'px';
-            gameContainer.appendChild(ufo);
-            
-            ufos.push({
-                element: ufo,
-                x: 800,
-                y: parseInt(ufo.style.top)
-            });
-        }
+    const ufoImg = document.createElement('img');
+    ufoImg.className = 'ufo';
+    ufoImg.src = ufoImages[Math.floor(Math.random() * ufoImages.length)];
+    ufoImg.style.left = '800px';
+    ufoImg.style.top = Math.random() * 500 + 'px';
+    ufoImg.style.position = 'absolute';
+    ufoImg.style.width = '60px';
+    ufoImg.style.height = '40px';
+    ufoImg.style.zIndex = 5;
+
+    gameContainer.appendChild(ufoImg);
+
+    ufos.push({
+        element: ufoImg,
+        x: 800,
+        y: parseInt(ufoImg.style.top)
+    });
+}
+
         
         function checkCollision(ufo) {
             let cloudRect = {
@@ -309,9 +310,5 @@
         // Start the game
         gameLoop();
     </script>
-<audio autoplay loop>
-    <source src="Shattered Snapshots.mp3" type="audio/mpeg">
-</audio>
-
 </body>
 </html>
