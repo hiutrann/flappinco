@@ -10,23 +10,24 @@
             padding: 0;
             background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 50%, #98D8E8 100%);
             font-family: 'Arial', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             overflow: hidden;
         }
         
         #gameContainer {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
-            border: 3px solid #4682B4;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
+    border: none;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+
         
         #cloud {
     position: absolute;
@@ -147,7 +148,7 @@ let lastMilestone = 0;
         let gameOverElement = document.getElementById('gameOver');
         let finalScoreElement = document.getElementById('finalScore');
         
-        let cloudY = 300;
+        let cloudY = window.innerHeight / 2;
         let cloudVelocity = 0;
         let gravity = 0.6;
         let jumpPower = -12;
@@ -174,10 +175,11 @@ let lastMilestone = 0;
                 cloudY = 0;
                 cloudVelocity = 0;
             }
-            if (cloudY > 540) {
-                gameOver();
-                return;
-            }
+            if (cloudY > window.innerHeight - 60) {
+    gameOver();
+    return;
+}
+
             
             // Update cloud position
             cloud.style.top = cloudY + 'px';
@@ -235,7 +237,7 @@ if (score >= lastMilestone + 100) {
     ufoImg.className = 'ufo';
     ufoImg.src = ufoImages[Math.floor(Math.random() * ufoImages.length)];
     ufoImg.style.left = '800px';
-    ufoImg.style.top = Math.random() * 500 + 'px';
+	ufoImg.style.top = Math.random() * (window.innerHeight - 40) + 'px';
     ufoImg.style.position = 'absolute';
     ufoImg.style.width = '60px';
     ufoImg.style.height = '40px';
